@@ -128,6 +128,9 @@ def _asciify_frame(
     output_frame = np.array(outputImage)
     return output_frame
 
+def _asciify_frame_wrapper(args):
+    return _asciify_frame(*args)
+
 def ascii_photo(
         in_path, out_path, scale_factor=0.15, return_to_original_size=False, one_char_width=8, one_char_height=8, color_brightness=1, pixel_brightness=2.15, char_set = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ",
         monochrome=False, filters=None, overlay_contours=True, contour_depth_minimum_threshold = 0, contour_depth_maximum_threshold = 255, progress_bar=False
@@ -196,7 +199,6 @@ def ascii_photo(
     ascii_frame.save(out_path)
     if progress_bar: 
         print(f"Saved asciified photo to {out_path}")
-
 
 def ascii_video(
         in_path, out_path, scale_factor = 0.15, return_to_original_size=False, one_char_width = 8, one_char_height = 8, color_brightness=1, pixel_brightness=2.15, char_set = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ",
@@ -286,11 +288,8 @@ def ascii_video(
             ))
         else:
             break
-
-    cap.release()
-
     with Pool(num_workers) as pool:
-        ascii_frames = list(tqdm(pool.imap(_asciify_frame, *frame_args), total=len(frame_args), desc="Converting frames", disable = not progress_bar, leave=False))
+        ascii_frames = list(tqdm(pool.imap(_asciify_frame_wrapper, frame_args), total=len(frame_args), desc="Converting frames", disable=not progress_bar, leave=False))
         pool.close()
         pool.join()
 
